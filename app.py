@@ -1,9 +1,9 @@
 from flask import Flask, jsonify
 import pandas as pd
 import random
-
+from flask_cors import CORS
 app = Flask(__name__)
-
+CORS(app)
 # Function to read CSV data and add difficulty levels
 def load_data():
     df = pd.read_csv('English_To_Klingon.csv')
