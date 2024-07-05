@@ -2,15 +2,15 @@ from flask import Flask, jsonify
 import pandas as pd
 import random
 from flask_cors import CORS
+
 app = Flask(__name__)
 CORS(app)
-# Function to read CSV data and add difficulty levels
+
 def load_data():
     df = pd.read_csv('English_To_Klingon.csv')
     df['difficulty'] = df['english'].apply(calculate_difficulty)
-    return df.to_dict(orient='records')
+    return df
 
-# Function to calculate difficulty based on length of the English phrase
 def calculate_difficulty(phrase):
     length = len(phrase)
     if length <= 20:
@@ -20,9 +20,33 @@ def calculate_difficulty(phrase):
     else:
         return 'Hard'
 
-# Route to get a random flashcard
 @app.route('/flashcard', methods=['GET'])
 def get_random_flashcard():
-    flashcards = load_data()
-    random_flashcard = random.choice(flashcards)  # Select a random flashcard
+    df = load_data()
+    flashcards = df.to_dict(orient='records')
+    random_flashcard = random.choice(flashcards)
     return jsonify(random_flashcard)
+
+@app.route('/quiz', methods=['GET'])
+def get_quiz_data():
+    df = pd.read_csv('English_To_Klingon.csv')
+    # Ensure your CSV has columns for `english`, `klingon`, and other decoy options if applicable
+
+    # Randomly select 4 unique questions
+    questions = df.sample(4).to_dict(orient='records')
+
+    # Prepare data structure for the quiz
+    quiz_data = []
+    for question in questions:
+        # Assuming 'klingon' is the correct answer, and there are decoys in the data
+        correct_answer = question['klingon']
+        possible_decoys = df[df['klingon'] != correct_answer].sample(2)['klingon'].tolist()  # Adjust number of decoys if needed
+
+        quiz_data.append({
+            'question': question['english'],
+            'correct_answer': correct_answer,
+            'decoys': possible_decoys
+        })
+
+    return jsonify(quiz_data)
+
