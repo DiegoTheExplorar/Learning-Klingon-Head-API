@@ -42,11 +42,20 @@ def get_quiz_data():
         correct_answer = question['klingon']
         possible_decoys = df[df['klingon'] != correct_answer].sample(2)['klingon'].tolist()  # Adjust number of decoys if needed
 
+        # Combine correct answer with decoys and shuffle
+        all_options = [correct_answer] + possible_decoys
+        random.shuffle(all_options)
+
+        # Find the index of the correct answer in the shuffled list
+        correct_index = all_options.index(correct_answer)
+
         quiz_data.append({
             'question': question['english'],
-            'correct_answer': correct_answer,
-            'decoys': possible_decoys
+            'options': all_options,
+            'correct_index': correct_index
         })
 
     return jsonify(quiz_data)
 
+if __name__ == '__main__':
+    app.run(debug=True)
