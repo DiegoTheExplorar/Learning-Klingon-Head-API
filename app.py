@@ -30,23 +30,21 @@ def get_random_flashcard():
 @app.route('/quiz', methods=['GET'])
 def get_quiz_data():
     df = pd.read_csv('English_To_Klingon.csv')
-    # Ensure your CSV has columns for `english`, `klingon`, and other decoy options if applicable
 
-    # Randomly select 4 unique questions
     questions = df.sample(4).to_dict(orient='records')
 
-    # Prepare data structure for the quiz
+
     quiz_data = []
     for question in questions:
-        # Assuming 'klingon' is the correct answer, and there are decoys in the data
-        correct_answer = question['klingon']
-        possible_decoys = df[df['klingon'] != correct_answer].sample(2)['klingon'].tolist()  # Adjust number of decoys if needed
 
-        # Combine correct answer with decoys and shuffle
+        correct_answer = question['klingon']
+        possible_decoys = df[df['klingon'] != correct_answer].sample(2)['klingon'].tolist()
+
+
         all_options = [correct_answer] + possible_decoys
         random.shuffle(all_options)
 
-        # Find the index of the correct answer in the shuffled list
+
         correct_index = all_options.index(correct_answer)
 
         quiz_data.append({
@@ -56,6 +54,58 @@ def get_quiz_data():
         })
 
     return jsonify(quiz_data)
+
+@app.route('/klingon-question', methods=['GET'])
+def get_klingon_question():
+    df = pd.read_csv('English_To_Klingon.csv')
+
+    klingon_question = df.sample(1)
+    english_answers = df[df['klingon'] != klingon_question.iloc[0]['klingon']].sample(3)['english'].tolist()
+
+    correct_answer = klingon_question.iloc[0]['english']
+
+
+    options = [correct_answer] + english_answers
+    random.shuffle(options)
+
+
+    correct_index = options.index(correct_answer)
+
+    question_data = {
+        'question': klingon_question.iloc[0]['klingon'],
+        'options': options,
+        'correct_index': correct_index
+    }
+    return jsonify(question_data)
+
+@app.route('/mixed-questions', methods=['GET'])
+def get_mixed_questions():
+    df = pd.read_csv('English_To_Klingon.csv')
+    questions = df.sample(4)
+    mixed_quiz_data = []
+
+    for index, question in questions.iterrows():
+        if random.choice([True, False]):  
+            question_text = question['english']
+            correct_answer = question['klingon']
+            decoys = df[df['klingon'] != correct_answer].sample(2)['klingon'].tolist()
+        else:
+            question_text = question['klingon']
+            correct_answer = question['english']
+            decoys = df[df['english'] != correct_answer].sample(2)['english'].tolist()
+
+        options = [correct_answer] + decoys
+        random.shuffle(options)
+        correct_index = options.index(correct_answer)
+
+        mixed_quiz_data.append({
+            'question': question_text,
+            'options': options,
+            'correct_index': correct_index
+        })
+
+    return jsonify(mixed_quiz_data)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
