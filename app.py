@@ -97,6 +97,3 @@ def get_mixed_questions():
         })
 
     return jsonify(mixed_quiz_data)
-
-if __name__ == '__main__':
-    app.run(debug=True)
