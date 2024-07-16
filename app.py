@@ -86,7 +86,7 @@ def get_random_flashcard():
     random_flashcard = random.choice(flashcards)
     return jsonify(random_flashcard)
 
-@app.route('/quiz', methods=['GET'])
+@app.route('/english-questions', methods=['GET'])
 def get_quiz_data():
     df = load_data()
     questions = df.sample(4).to_dict(orient='records')
@@ -107,7 +107,7 @@ def get_quiz_data():
 
     return jsonify(quiz_data)
 
-@app.route('/klingon-question', methods=['GET'])
+@app.route('/klingon-questions', methods=['GET'])
 def get_klingon_question():
     df = load_data()
     questions = df.sample(4)
