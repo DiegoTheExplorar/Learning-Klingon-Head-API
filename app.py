@@ -1,10 +1,23 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, render_template_string
 import pandas as pd
 import random
 from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
+
+api_info = {
+    'api_name': 'English to Klingon Learning API',
+    'description': 'An API for learning English to Klingon translations through flashcards and quizzes.',
+    'endpoints': {
+        '/': 'Returns details about the API.',
+        '/flashcard': 'Returns a random English to Klingon flashcard.',
+        '/quiz': 'Returns quiz data with multiple-choice questions.',
+        '/klingon-question': 'Returns Klingon questions with English options.',
+        '/mixed-questions': 'Returns mixed English or Klingon questions with options.'
+    }
+}
+
 
 def load_data():
     df = pd.read_csv('English_To_Klingon.csv')
@@ -19,6 +32,52 @@ def calculate_difficulty(phrase):
         return 'Medium'
     else:
         return 'Hard'
+    
+@app.route('/', methods=['GET'])
+def api_details():
+    template = """
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{{ api_info['api_name'] }} - API Details</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                line-height: 1.6;
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            h1 {
+                color: #333;
+            }
+            h2 {
+                color: #555;
+            }
+            ul {
+                list-style-type: none;
+                padding: 0;
+            }
+            li {
+                margin-bottom: 10px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>{{ api_info['api_name'] }}</h1>
+        <p>{{ api_info['description'] }}</p>
+        <h2>Endpoints:</h2>
+        <ul>
+            {% for endpoint, description in api_info['endpoints'].items() %}
+            <li><strong>{{ endpoint }}</strong>: {{ description }}</li>
+            {% endfor %}
+        </ul>
+    </body>
+    </html>
+    """
+    return render_template_string(template, api_info=api_info)
 
 @app.route('/flashcard', methods=['GET'])
 def get_random_flashcard():
